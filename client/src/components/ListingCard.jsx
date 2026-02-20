@@ -12,9 +12,8 @@ import toast from "react-hot-toast";
 
 export default function ListingCard({ item }) {
   const { currentUser } = use(AuthContext);
-  const { handleSendMessageButton, isLoading } = use(UserContext);
+  const { handleSendMessageButton, loadingPostId } = use(UserContext);
   const [isSaved, setIsSaved] = useState(item.isSaved);
-  const [cardId, setCardId] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,7 +50,7 @@ export default function ListingCard({ item }) {
   };
 
   return (
-    <Card onClick={() => setCardId(item._id)}>
+    <Card>
       {/* IMAGE */}
       <Link to={`/posts/${item._id}`} className="w-full h-[200px] bg-gray-200">
         <img
@@ -121,14 +120,12 @@ export default function ListingCard({ item }) {
             <Tooltip>
               <TooltipTrigger
                 onClick={() => {
-                  handleSendMessageButton(item.userId, navigate);
+                  handleSendMessageButton(item.userId, item._id, navigate);
                 }}
-                className={`border border-gray-400 p-1.5 rounded-md cursor-pointer transition disabled:cursor-not-allowed ${
-                  cardId === item._id && isLoading ? "opacity-50" : ""
-                }`}
-                disabled={isLoading}
+                className={`border border-gray-400 p-1.5 rounded-md cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50`}
+                disabled={loadingPostId === item._id}
               >
-                {cardId === item._id && isLoading ? (
+                {loadingPostId === item._id ? (
                   <Spinner className={"animate-spin size-5"} />
                 ) : (
                   <img src="/chat.png" className="w-5 h-5" />

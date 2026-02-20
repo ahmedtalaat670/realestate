@@ -102,7 +102,7 @@ export default function SinglePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { currentUser } = useContext(AuthContext);
-  const { handleSendMessageButton, isLoading } = useContext(UserContext);
+  const { handleSendMessageButton, loadingPostId } = useContext(UserContext);
 
   const { data: postData, isLoading: dataLoading } = useQuery({
     queryKey: ["post", params.id],
@@ -291,13 +291,14 @@ export default function SinglePage() {
               onClick={() => {
                 handleSendMessageButton(
                   postData?.data.post.userId._id,
+                  postData?.data.post._id,
                   navigate,
                 );
               }}
               className="flex gap-2 items-center p-4 border border-(--secondary-color) bg-white cursor-pointer rounded-md disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isLoading}
+              disabled={loadingPostId === postData?.data.post._id}
             >
-              {isLoading ? (
+              {loadingPostId === postData?.data.post._id ? (
                 <Spinner className={"animate-spin size-5"} />
               ) : (
                 <img src="/chat.png" alt="" className="h-5 w-5" />

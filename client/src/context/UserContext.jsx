@@ -12,7 +12,7 @@ const UserContextProvider = ({ children }) => {
   const { socket } = use(SocketContext);
   const [posts, setPosts] = useState(null);
   const [notificationsNumber, setNotificationsNumber] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingPostId, setLoadingPostId] = useState(null);
   const [chatId, setChatId] = useState(null);
   const chatCacheRef = useRef(new Map());
 
@@ -26,42 +26,62 @@ const UserContextProvider = ({ children }) => {
     ...(location.pathname.includes("profile") && { enabled: false }),
   });
 
-  const handleSendMessageButton = async (receiverId, navigate) => {
+  const handleSendMessageButton = async (receiverId, postId, navigate) => {
     if (!currentUser) {
       toast.error("you need to login");
       return;
     }
-    if (currentUser?.userId === receiverId) {
+
+    const normalizedReceiverId =
+      typeof receiverId === "object" ? receiverId._id : receiverId;
+
+    if (currentUser.userId === normalizedReceiverId) {
       toast.error("you are the owner of the post");
       return;
     }
-    const cacheKey = `${currentUser.userId}-${receiverId}`;
 
-    //  Return cached chatId if exists
+    const cacheKey = `${currentUser.userId}-${normalizedReceiverId}`;
+
+    // If cached → navigate instantly
     if (chatCacheRef.current.has(cacheKey)) {
       setChatId(chatCacheRef.current.get(cacheKey));
       navigate("/profile");
       return;
     }
-    setIsLoading(true);
-    const res = await apiRequest
-      .get(`/chat/get-chat-byId/${receiverId}`)
-      .catch(async (e) => {
-        if (e?.response?.status === 404) {
-          const res2 = await apiRequest.get(`/chat/add-chat/${receiverId}`);
-          if (res2) {
-            setChatId(res2?.data._id);
-            navigate("/profile");
-          }
-          chatCacheRef.current.set(cacheKey, res2?.data._id);
+
+    try {
+      setLoadingPostId(postId);
+
+      const res = await apiRequest.get(
+        `/chat/get-chat-byId/${normalizedReceiverId}`,
+      );
+
+      const chatId = res?.data?.data?._id;
+
+      if (chatId) {
+        setChatId(chatId);
+        chatCacheRef.current.set(cacheKey, chatId);
+        navigate("/profile");
+      }
+    } catch (e) {
+      if (e?.response?.status === 404) {
+        const res2 = await apiRequest.get(
+          `/chat/add-chat/${normalizedReceiverId}`,
+        );
+
+        const newChatId = res2?.data?._id;
+
+        if (newChatId) {
+          setChatId(newChatId);
+          chatCacheRef.current.set(cacheKey, newChatId);
+          navigate("/profile");
         }
-      });
-    if (res) {
-      setChatId(res?.data.data._id);
-      navigate("/profile");
-      chatCacheRef.current.set(cacheKey, res?.data.data._id);
+      } else {
+        toast.error("Something went wrong");
+      }
+    } finally {
+      setLoadingPostId(null);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -88,7 +108,7 @@ const UserContextProvider = ({ children }) => {
         setPosts,
         notificationsNumber,
         setNotificationsNumber,
-        isLoading,
+        loadingPostId,
         chatId,
         setChatId,
       }}

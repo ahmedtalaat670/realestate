@@ -11,7 +11,7 @@ import { Skeleton } from "./ui/skeleton";
 export function ChatsSkeleton() {
   return (
     <div className="chats flex flex-col gap-[15px] py-5 h-full w-full overflow-auto">
-      {Array.from({ length: 3 }).map((_, i) => (
+      {Array.from({ length: 1 }).map((_, i) => (
         <div
           key={i}
           className="chat flex items-center gap-5 p-[15px_8px] rounded-md"

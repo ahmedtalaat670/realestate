@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiRequest = axios.create({
-  baseURL: "http://localhost:8800",
+  baseURL: "https://realestate-fly3.vercel.app",
   withCredentials: true,
 });
 
@@ -13,7 +13,7 @@ apiRequest.interceptors.response.use(
       window.dispatchEvent(new Event("auth-cookie-lost"));
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiRequest;

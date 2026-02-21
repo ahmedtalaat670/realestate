@@ -17,9 +17,9 @@ const port = 8800;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://realestate-fawn-two.vercel.app",
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(cookieParser());

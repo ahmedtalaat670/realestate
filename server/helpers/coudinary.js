@@ -1,17 +1,34 @@
-import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
-cloudinary.v2.config({
+cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const uploadMediaToCloudinary = async (filePath) => {
+export const uploadMediaToCloudinary = async (file, userId) => {
   try {
-    const result = await cloudinary.v2.uploader.upload(filePath, {
-      resource_type: "auto",
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          asset_folder: "upload_profile", // Optional: specify a folder for the image
+          resource_type: "auto",
+          public_id: `${userId}_${Date.now()}`, // Set the public_id for the image
+        },
+        (error, result) => {
+          if (error) {
+            console.log(error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        },
+      );
+
+      // Write the buffer to the stream
+      uploadStream.end(file.buffer);
     });
-    return result;
+    return uploadResult;
   } catch (e) {
     console.log(e);
     throw new Error("Failed to upload the media");
@@ -20,11 +37,11 @@ export const uploadMediaToCloudinary = async (filePath) => {
 
 export const deleteMediaFromCloudinary = async (id) => {
   try {
-    await cloudinary.v2.uploader.destroy(id, {
+    await cloudinary.uploader.destroy(id, {
       resource_type: "image",
     });
-  } catch (e) {
-    console.log(e);
-    throw new Error("Failed to delete the media");
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to delete the image");
   }
 };

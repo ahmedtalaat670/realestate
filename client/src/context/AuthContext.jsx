@@ -22,31 +22,31 @@ export const AuthContextProvider = ({ children }) => {
       return await apiRequest.get("/auth/authorization");
     },
   });
-  // useEffect(() => {
-  //   localStorage.setItem("user", JSON.stringify(currentUser));
-  // }, [currentUser]);
-  // useEffect(() => {
-  //   if (isError) {
-  //     const status = error?.response?.status;
-  //     if (status === 401 || status === 403) {
-  //       setCurrentUser(null);
-  //       localStorage.removeItem("user");
-  //     }
-  //     return;
-  //   }
+  useEffect(() => {
+    localStorage.setItem("user", JSON.stringify(currentUser));
+  }, [currentUser]);
+  useEffect(() => {
+    // if (isError) {
+    //   const status = error?.response?.status;
+    //   if (status === 401 || status === 403) {
+    //     setCurrentUser(null);
+    //     localStorage.removeItem("user");
+    //   }
+    //   return;
+    // }
 
-  //   if (authData?.data) {
-  //     const user = authData.data;
-  //     setCurrentUser({
-  //       name: user.name,
-  //       avatar: user.avatar,
-  //       email: user.email,
-  //       savedPosts: user.savedPosts,
-  //       verified: user.isVerified,
-  //       userId: user._id,
-  //     });
-  //   }
-  // }, [authData, error, isError]);
+    if (authData?.data) {
+      const user = authData.data;
+      setCurrentUser({
+        name: user.name,
+        avatar: user.avatar,
+        email: user.email,
+        savedPosts: user.savedPosts,
+        verified: user.isVerified,
+        userId: user._id,
+      });
+    }
+  }, [authData]);
 
   // useEffect(() => {
   //   const handleCookieLost = () => {

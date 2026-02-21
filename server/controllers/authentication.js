@@ -34,11 +34,13 @@ export const register = async (req, res) => {
         userId: user._id,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: 1000 * 60 * 60 * 24 * 7 }
+      { expiresIn: 1000 * 60 * 60 * 24 * 7 },
     );
     res
       .cookie("token", token, {
-        httpOnly: false,
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       })
       .status(201)
@@ -113,11 +115,13 @@ export const login = async (req, res) => {
         userId: user._id,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: 1000 * 60 * 60 * 24 * 7 }
+      { expiresIn: 1000 * 60 * 60 * 24 * 7 },
     );
     res
       .cookie("token", token, {
-        httpOnly: false,
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       })
       .status(201)

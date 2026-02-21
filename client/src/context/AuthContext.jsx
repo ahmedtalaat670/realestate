@@ -6,7 +6,7 @@ export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
+    JSON.parse(localStorage.getItem("user")) || null,
   );
   const updateUser = (data) => {
     setCurrentUser(data);
@@ -48,18 +48,18 @@ export const AuthContextProvider = ({ children }) => {
     }
   }, [authData, error, isError]);
 
-  useEffect(() => {
-    const handleCookieLost = () => {
-      setCurrentUser(null);
-      localStorage.removeItem("user");
-    };
+  // useEffect(() => {
+  //   const handleCookieLost = () => {
+  //     setCurrentUser(null);
+  //     localStorage.removeItem("user");
+  //   };
 
-    window.addEventListener("auth-cookie-lost", handleCookieLost);
+  //   window.addEventListener("auth-cookie-lost", handleCookieLost);
 
-    return () => {
-      window.removeEventListener("auth-cookie-lost", handleCookieLost);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("auth-cookie-lost", handleCookieLost);
+  //   };
+  // }, []);
   return (
     <AuthContext.Provider value={{ currentUser, updateUser, setCurrentUser }}>
       {children}

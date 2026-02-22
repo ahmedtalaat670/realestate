@@ -1,9 +1,16 @@
 import { Marker, Popup } from "react-leaflet";
 import { Link } from "react-router-dom";
+import L from "leaflet";
+
+const customIcon = L.icon({
+  iconUrl: "/marker-icon.png",
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+});
 
 function Pin({ item }) {
   return (
-    <Marker position={[item.latitude, item.longitude]}>
+    <Marker position={[item.latitude, item.longitude]} icon={customIcon}>
       <Popup>
         <div className="flex flex-col gap-5">
           <img

@@ -34,7 +34,7 @@ function SearchBar() {
         {types.map((t, idx) => (
           <button
             key={t}
-            onClick={() => setType(type)}
+            onClick={() => setType(t)}
             className={`flex-1 py-4 px-8 capitalize transition-colors ${
               type === t
                 ? "bg-black text-white"

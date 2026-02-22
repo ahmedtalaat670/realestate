@@ -34,7 +34,7 @@ export const register = async (req, res) => {
         userId: user._id,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: 1000 * 60 * 60 * 24 * 7 },
+      { expiresIn: "7d" },
     );
     res
       .cookie("token", token, {
@@ -42,6 +42,7 @@ export const register = async (req, res) => {
         secure: true,
         sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 7,
+        path: "/",
       })
       .status(201)
       .json({
@@ -115,7 +116,7 @@ export const login = async (req, res) => {
         userId: user._id,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: 1000 * 60 * 60 * 24 * 7 },
+      { expiresIn: "7d" },
     );
     res
       .cookie("token", token, {
@@ -123,6 +124,7 @@ export const login = async (req, res) => {
         secure: true,
         sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 7,
+        path: "/",
       })
       .status(201)
       .json({
@@ -164,5 +166,13 @@ export const isLoggedIn = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("token").status(200).json({ message: "Logout Successful" });
+  res
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    })
+    .status(200)
+    .json({ message: "Logout Successful" });
 };

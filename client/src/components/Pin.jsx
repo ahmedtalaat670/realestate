@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import L from "leaflet";
 
 const customIcon = L.icon({
-  iconUrl: "/marker-icon.png",
+  iconUrl: "/pin.png",
   iconSize: [30, 40],
   iconAnchor: [15, 40],
 });

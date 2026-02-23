@@ -10,7 +10,7 @@ export const SocketContextProvider = ({ children }) => {
 
   useEffect(() => {
     setSocket(
-      io("https://realestate-bbpxnq.fly.dev", {
+      io("https://realestate-g23n.vercel.app", {
         transports: ["websocket"],
       }),
     );

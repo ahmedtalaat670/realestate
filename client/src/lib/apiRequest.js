@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiRequest = axios.create({
-  baseURL: "https://realestate-g23n.vercel.app",
+  baseURL: "https://realestate-fly3.vercel.app",
   withCredentials: true,
 });
 

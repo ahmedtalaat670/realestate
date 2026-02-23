@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 4000;
 
 const io = new Server(server, {
   cors: {
-    origin: "https://your-frontend-domain.com",
+    origin: "https://realestate-fawn-two.vercel.app/",
   },
 });
 

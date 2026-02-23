@@ -1,9 +1,20 @@
+import express from "express";
+import http from "http";
 import { Server } from "socket.io";
 
-const io = new Server({
+const app = express();
+const server = http.createServer(app);
+
+const PORT = process.env.PORT || 4000;
+
+const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://your-frontend-domain.com",
   },
+});
+
+app.get("/", (req, res) => {
+  res.send("Socket server is running 🚀");
 });
 
 let onlineUsers = [];
@@ -26,23 +37,24 @@ const removeUser = (socketId) => {
 };
 
 io.on("connection", (socket) => {
-  console.log(`the socket is live with id  ${socket.id}`);
+  console.log(`Socket connected: ${socket.id}`);
 
   socket.on("newUser", (userId) => {
     newUser(userId, socket.id);
-    console.log(onlineUsers);
   });
+
   socket.on("sendMessage", ({ receiverId, data }) => {
     const receiver = getUser(receiverId);
     if (receiver) {
       io.to(receiver.socketId).emit("getMessage", data);
     }
-    console.log(receiverId, "receiver");
-    console.log(data, "data");
   });
+
   socket.on("disconnect", () => {
     removeUser(socket.id);
   });
 });
 
-io.listen(4000);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});

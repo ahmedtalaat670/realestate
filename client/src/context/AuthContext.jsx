@@ -26,14 +26,14 @@ export const AuthContextProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(currentUser));
   }, [currentUser]);
   useEffect(() => {
-    // if (isError) {
-    //   const status = error?.response?.status;
-    //   if (status === 401 || status === 403) {
-    //     setCurrentUser(null);
-    //     localStorage.removeItem("user");
-    //   }
-    //   return;
-    // }
+    if (isError) {
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        setCurrentUser(null);
+        localStorage.removeItem("user");
+      }
+      return;
+    }
 
     if (authData?.data) {
       const user = authData.data;
@@ -46,20 +46,20 @@ export const AuthContextProvider = ({ children }) => {
         userId: user._id,
       });
     }
-  }, [authData]);
+  }, [authData, isError, error]);
 
-  // useEffect(() => {
-  //   const handleCookieLost = () => {
-  //     setCurrentUser(null);
-  //     localStorage.removeItem("user");
-  //   };
+  useEffect(() => {
+    const handleCookieLost = () => {
+      setCurrentUser(null);
+      localStorage.removeItem("user");
+    };
 
-  //   window.addEventListener("auth-cookie-lost", handleCookieLost);
+    window.addEventListener("auth-cookie-lost", handleCookieLost);
 
-  //   return () => {
-  //     window.removeEventListener("auth-cookie-lost", handleCookieLost);
-  //   };
-  // }, []);
+    return () => {
+      window.removeEventListener("auth-cookie-lost", handleCookieLost);
+    };
+  }, []);
   return (
     <AuthContext.Provider value={{ currentUser, updateUser, setCurrentUser }}>
       {children}

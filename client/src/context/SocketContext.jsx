@@ -9,7 +9,11 @@ export const SocketContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    setSocket(io("https://realestate-bbpxnq.fly.dev"));
+    setSocket(
+      io("https://realestate-bbpxnq.fly.dev", {
+        transports: ["websocket"],
+      }),
+    );
   }, []);
 
   useEffect(() => {

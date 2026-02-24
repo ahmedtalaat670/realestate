@@ -5,7 +5,7 @@ import { TypingAnimation } from "@/components/ui/typing-animation";
 
 function HomePage() {
   return (
-    <div className="homePage flex h-full pt-15 md:pt-0">
+    <div className="homePage flex h-full pt-20 md:pt-0">
       <PageTitle
         title={"Home"}
         description={

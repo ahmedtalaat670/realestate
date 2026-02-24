@@ -23,7 +23,7 @@ function HomePage() {
           <SearchBar />
 
           {/* Boxes */}
-          <div className="boxes flex flex-row flex-wrap justify-between gap-6 mt-5">
+          <div className="boxes flex flex-row flex-wrap justify-between gap-6 my-5">
             <div className="box text-center">
               <h1 className="text-4xl lg:text-3xl font-bold">
                 <NumberTicker value={16} />+

@@ -5,7 +5,7 @@ import { TypingAnimation } from "@/components/ui/typing-animation";
 
 function HomePage() {
   return (
-    <div className="homePage flex h-full pt-15">
+    <div className="homePage flex h-full pt-15 md:pt-0">
       <PageTitle
         title={"Home"}
         description={
@@ -13,7 +13,7 @@ function HomePage() {
         }
       />
       {/* Text Section */}
-      <div className="textContainer flex-3 flex flex-col justify-center gap-6 md:gap-12 sm:justify-start">
+      <div className="textContainer flex-3 flex flex-col justify-center gap-3 md:gap-12 sm:justify-start">
         <div className="wrapper flex flex-col gap-12 sm:gap-6 px-6">
           <h1 className="title text-6xl lg:text-5xl font-bold">
             <TypingAnimation typeSpeed={50}>

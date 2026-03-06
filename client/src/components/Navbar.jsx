@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 import { AuthContext } from "@/context/AuthContext";
@@ -22,6 +22,7 @@ const navLinks = [
 export default function Navbar() {
   const { currentUser } = useContext(AuthContext);
   const { notificationsNumber } = useContext(UserContext);
+  const [open, setOpen] = useState(false);
   const dropdownLinks = () => {
     if (currentUser) {
       return [...navLinks, { text: "profile", to: "/profile" }];
@@ -104,7 +105,7 @@ export default function Navbar() {
         )}
 
         {/* MOBILE MENU */}
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger className={"md:hidden w-8 h-8"}>
             <img src="/menu.png" alt="menu" className="" />
           </DropdownMenuTrigger>
@@ -112,10 +113,9 @@ export default function Navbar() {
             <DropdownMenuLabel className={"text-2xl"}>Menu</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {dropdownLinks().map((link, i) => (
-              <DropdownMenuItem>
+              <DropdownMenuItem key={i} onClick={() => setOpen(false)}>
                 <NavLink
                   to={link.to}
-                  key={i}
                   className={({ isActive }) =>
                     `font-medium text-xl w-full py-8 px-5 capitalize block rounded-lg ${
                       isActive &&

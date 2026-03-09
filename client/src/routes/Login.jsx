@@ -8,6 +8,19 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import z from "zod";
 
+const loginForm = [
+  {
+    name: "username",
+    type: "text",
+    placeholder: "Enter your username",
+  },
+  {
+    name: "password",
+    type: "password",
+    placeholder: "Enter your password",
+  },
+];
+
 function Login() {
   const queryClient = useQueryClient();
   const formSchema = z.object({
@@ -56,29 +69,19 @@ function Login() {
           className="flex flex-col gap-5 w-full max-w-md px-5"
         >
           <h1 className="text-3xl font-semibold text-center">Welcome back</h1>
-
-          <div className="flex flex-col gap-1">
-            <input
-              {...register("username")}
-              type="text"
-              placeholder="Username"
-              className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
-            />
-            {errors.username && (
-              <div className="text-red-500">{errors.username.message}</div>
-            )}
-          </div>
-          <div className="flex flex-col gap-1">
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Password"
-              className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
-            />
-            {errors.password && (
-              <div className="text-red-500">{errors.password.message}</div>
-            )}
-          </div>
+          {loginForm.map((b, i) => (
+            <div className="flex flex-col gap-1" key={i}>
+              <input
+                {...register(b.name)}
+                type={b.type}
+                placeholder={b.placeholder}
+                className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
+              />
+              {errors[b.name] && (
+                <div className="text-red-500">{errors[b.name].message}</div>
+              )}
+            </div>
+          ))}
           <button
             type="submit"
             disabled={isSubmitting}

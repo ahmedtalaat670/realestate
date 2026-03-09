@@ -2,10 +2,28 @@ import PageTitle from "@/components/PageTitle";
 import { AuthContext } from "@/context/AuthContext";
 import apiRequest from "@/lib/apiRequest";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import z from "zod";
+
+const registerForm = [
+  {
+    name: "username",
+    type: "text",
+    placeholder: "Enter your name",
+  },
+  {
+    name: "email",
+    type: "text",
+    placeholder: "Enter your email",
+  },
+  {
+    name: "password",
+    type: "password",
+    placeholder: "Enter a strong password",
+  },
+];
 
 function Register() {
   const { updateUser } = useContext(AuthContext);
@@ -55,43 +73,19 @@ function Register() {
           <h1 className="text-3xl font-semibold text-center">
             Create an Account
           </h1>
-
-          <div className="flex flex-col gap-1">
-            <input
-              {...register("username")}
-              type="text"
-              placeholder="Username"
-              className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
-            />
-            {errors.username && (
-              <span className="text-red-500">{errors.username.message}</span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <input
-              {...register("email")}
-              type="text"
-              placeholder="Email"
-              className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
-            />
-            {errors.email && (
-              <span className="text-red-500">{errors.email.message}</span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Password"
-              className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
-            />
-            {errors.password && (
-              <span className="text-red-500">{errors.password.message}</span>
-            )}
-          </div>
-
+          {registerForm.map((b, i) => (
+            <div className="flex flex-col gap-1" key={i}>
+              <input
+                {...register(b.name)}
+                type={b.type}
+                placeholder={b.placeholder}
+                className="py-3 px-2 border border-gray-400 rounded-md focus:outline-none"
+              />
+              {errors[b.name] && (
+                <div className="text-red-500">{errors[b.name].message}</div>
+              )}
+            </div>
+          ))}
           <button
             type="submit"
             disabled={isSubmitting}

@@ -5,7 +5,7 @@ import { TypingAnimation } from "@/components/ui/typing-animation";
 
 function HomePage() {
   return (
-    <div className="homePage flex h-full pt-20 md:pt-0">
+    <div className="flex h-full">
       <PageTitle
         title={"Home"}
         description={
@@ -13,8 +13,8 @@ function HomePage() {
         }
       />
       {/* Text Section */}
-      <div className="textContainer flex-3 flex flex-col justify-center gap-3 md:gap-12 sm:justify-start">
-        <div className="wrapper flex flex-col gap-12 sm:gap-6 px-6">
+      <div className="flex-3 flex flex-col justify-center gap-3 md:gap-12 md:justify-start">
+        <div className="h-full flex flex-col gap-6 md:gap-12 px-6">
           <h1 className="title text-6xl lg:text-5xl font-bold">
             <TypingAnimation typeSpeed={50}>
               Find Real Estate & Get Your Dream Place
@@ -23,8 +23,8 @@ function HomePage() {
           <SearchBar />
 
           {/* Boxes */}
-          <div className="boxes flex flex-row flex-wrap justify-between gap-6 my-5">
-            <div className="box text-center">
+          <div className="flex flex-row flex-wrap justify-between gap-6 my-5">
+            <div className="text-center">
               <h1 className="text-4xl lg:text-3xl font-bold">
                 <NumberTicker value={16} />+
               </h1>

@@ -1,15 +1,9 @@
 import PageTitle from "@/components/PageTitle";
+import { AnimatedCircularProgressBar } from "@/components/ui/animated-circular-progress-bar";
 import { AuthContext } from "@/context/AuthContext";
 import apiRequest from "@/lib/apiRequest";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  useRef,
-  useState,
-  useOptimistic,
-  useEffect,
-  startTransition,
-  useContext,
-} from "react";
+import { useRef, useState, useEffect, useContext } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -17,13 +11,10 @@ import z from "zod";
 
 function NewPostPage() {
   const [images, setImages] = useState([]);
-  const nav = useNavigate();
   const [isPending, setIsPending] = useState(false);
+  const [loaded, setLoaded] = useState(0);
+  const nav = useNavigate();
   const fileRef = useRef();
-  const [currentImages, updateImages] = useOptimistic(
-    images,
-    (state, deletedId) => state.filter((img) => img.image_id !== deletedId),
-  );
 
   const authInformation = useContext(AuthContext);
 
@@ -99,7 +90,11 @@ function NewPostPage() {
     [...files].forEach((file) => formData.append("files", file));
 
     try {
-      const res = await apiRequest.post("/media/bulk-upload", formData);
+      const res = await apiRequest.post("/media/bulk-upload", formData, {
+        onUploadProgress: (e) => {
+          setLoaded((e.loaded / e.total) * 100);
+        },
+      });
       setImages((prev) => [
         ...prev,
         ...res.data.data.map((img) => ({
@@ -111,22 +106,24 @@ function NewPostPage() {
       console.log(err);
     } finally {
       setIsPending(false);
+      setLoaded(0);
     }
   };
 
   const handleDeleteButton = async (index) => {
-    const id = images[index].image_id;
-    updateImages(id);
+    const image = images[index];
+    if (!image) return;
+
+    const id = image.image_id;
+    const previousImages = images;
+
+    setImages((prev) => prev.filter((img) => img.image_id !== id));
 
     try {
-      startTransition(async () => {
-        const res = await apiRequest.delete(`/media/delete/${id}`);
-        if (res.data.success) {
-          setImages((prev) => prev.filter((_, i) => i !== index));
-        }
-      });
+      await apiRequest.delete(`/media/delete/${id}`);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      setImages(previousImages);
     }
   };
 
@@ -171,8 +168,8 @@ function NewPostPage() {
   };
 
   useEffect(() => {
-    console.log(currentImages);
-  }, [currentImages]);
+    console.log(isPending);
+  }, [isPending]);
 
   return (
     <div className="flex flex-col md:flex-row">
@@ -257,33 +254,43 @@ function NewPostPage() {
             ))}
 
             {/* FILE UPLOAD */}
-            <div className="w-[45%] md:w-[30%] flex flex-col gap-1">
-              <label>Upload Images</label>
+            <div className="w-[45%] md:w-[30%] h-full flex flex-col gap-1">
+              {isPending ? "" : <label>Upload Images</label>}
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 ref={fileRef}
                 onChange={handleImagesUpload}
+                disabled={isPending}
                 className="hidden"
               />
-              <div
-                onClick={() => !isPending && fileRef.current.click()}
-                className={`p-5 rounded-md text-center cursor-pointer font-medium tracking-wide hover:bg-(--primary-color-hover) ${
-                  isPending
-                    ? "bg-(--primary-color-hover) cursor-not-allowed"
-                    : "bg-(--primary-color)"
-                }`}
-              >
-                Upload
-              </div>
+              {isPending ? (
+                <AnimatedCircularProgressBar
+                  value={loaded}
+                  gaugePrimaryColor="#fece51"
+                  gaugeSecondaryColor="rgba(0, 0, 0, 0.1)"
+                  className={"h-[68px] mt-6"}
+                />
+              ) : (
+                <div
+                  onClick={() => !isPending && fileRef.current.click()}
+                  className={`p-5 capitalize rounded-md text-center font-medium tracking-wide hover:bg-(--primary-color-hover) ${
+                    isPending
+                      ? "bg-(--primary-color-hover) cursor-not-allowed"
+                      : "bg-(--primary-color) cursor-pointer"
+                  }`}
+                >
+                  upload
+                </div>
+              )}
             </div>
 
             {/* SUBMIT */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-[45%] md:w-[30%] capitalize cursor-pointer rounded-md bg-(--secondary-color) hover:bg-(--secondary-color-hover) text-white font-bold disabled:bg-(--secondary-color-hover) disabled:cursor-not-allowed"
+              className="w-[45%] md:w-[30%] h-[68px] mt-6 capitalize cursor-pointer rounded-md bg-(--secondary-color) hover:bg-(--secondary-color-hover) text-white font-bold disabled:bg-(--secondary-color-hover) disabled:cursor-not-allowed"
             >
               add
             </button>
@@ -298,7 +305,7 @@ function NewPostPage() {
       {/* IMAGES */}
       <div className="flex-2 bg-[#fcf5f3]">
         <div className="p-5 flex flex-wrap justify-center gap-5">
-          {currentImages.map((img, index) => (
+          {images.map((img, index) => (
             <div
               key={img.image_id}
               className="relative w-[40%] h-44 md:w-full group"

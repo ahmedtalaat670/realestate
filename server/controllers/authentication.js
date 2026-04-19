@@ -8,139 +8,130 @@ dotenv.config();
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+
     const existedUser = await User.findOne({
-      $or: [{ name: username }, { email }],
+      $or: [{ name: username }, { email: normalizedEmail }],
     });
-    if (existedUser)
-      return res
-        .status(400)
-        .json({ message: "there is another user with the same email or name" });
-    const otp = randomOtpGenerator();
-    const otpExpiryDate = Date.now() + 1000 * 60 * 60 * 2;
-    const hashedPassword = await bcrypt
-      .hash(password, 10)
-      .catch((e) => console.log(e));
+
+    if (existedUser) {
+      return res.status(400).json({
+        message: "User with this email or username already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       name: username,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
-      otp,
-      otpExpiryDate,
-      isVerified: false,
     });
-    sendEmail(email, otp);
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "7d" },
-    );
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
         path: "/",
       })
       .status(201)
       .json({
-        message: "you created new account successfully",
+        message: "Account created successfully",
         user: {
           userId: user._id,
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          verified: user.isVerified,
           savedPosts: user.savedPosts,
         },
       });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: error,
+      message: "Internal server error",
     });
-  }
-};
-
-export const verifyingCode = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    const user = await User.findOne({ email });
-    if (!user)
-      return res
-        .status(404)
-        .json({ message: "There is no user with this email" });
-    if (user.isVerified)
-      return res
-        .status(400)
-        .json({ message: "your email is already verified" });
-    if (user.otp !== Number(otp))
-      return res
-        .status(400)
-        .json({ message: "the verification code is wrong, try again." });
-    if (user.otpExpiryDate < Date.now()) {
-      const newOtp = randomOtpGenerator();
-      user.otp = newOtp;
-      sendEmail(email, otp);
-      user.otpExpiryDate = Date.now() + 1000 * 60 * 60 * 2;
-      await user.save();
-      return res.status(400).json({
-        message:
-          "your verification code is expired, check your email for the new code",
-      });
-    }
-    user.isVerified = true;
-    await user.save();
-    res.status(200).json({ message: "you verified your email" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ name: username });
-    if (!user)
-      return res
-        .status(404)
-        .json({ message: "there is no user with this name" });
+
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    if (!process.env.JWT_SECRET_KEY) {
+      throw new Error("JWT secret is not defined");
+    }
+
+    const user = await User.findOne({
+      name: username,
+    }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid username or password",
+      });
+    }
+
     const isUserValid = await bcrypt.compare(password, user.password);
-    if (!isUserValid)
-      return res.status(400).json({ message: "The password is wrong" });
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "7d" },
-    );
+
+    if (!isUserValid) {
+      return res.status(400).json({
+        message: "Invalid username or password",
+      });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 1000 * 60 * 60 * 24 * 7,
         path: "/",
       })
-      .status(201)
+      .status(200)
       .json({
-        message: "you logged in successfully",
+        message: "Logged in successfully",
         user: {
           userId: user._id,
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          verified: user.isVerified,
           savedPosts: user.savedPosts,
         },
       });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Something went wrong" });
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 export const isLoggedIn = async (req, res) => {
@@ -154,7 +145,16 @@ export const isLoggedIn = async (req, res) => {
         email: 1,
         isVerified: 1,
       });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
       return res.status(200).json(user);
+    } else {
+      return res.status(401).json({ message: "You are not authenticated" });
     }
   } catch (error) {
     console.log(error);
@@ -169,10 +169,10 @@ export const logout = (req, res) => {
   res
     .clearCookie("token", {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     })
     .status(200)
-    .json({ message: "Logout Successful" });
+    .json({ message: "Logout successful" });
 };

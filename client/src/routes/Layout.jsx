@@ -12,13 +12,8 @@ import { Toaster } from "react-hot-toast";
 // Layout component
 export function Layout() {
   const navigationType = useNavigationType();
-  const { currentUser } = useContext(AuthContext);
   const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (currentUser && !currentUser.verified) navigate("/verification");
-  }, [currentUser, location.pathname, navigate]);
   useEffect(() => {
     if (navigationType === "PUSH") {
       window.scrollTo(0, 0);
@@ -59,18 +54,6 @@ export function RequireAuth() {
       )
     )
       navigate("/login");
-    else if (
-      currentUser &&
-      !currentUser.verified &&
-      !location.pathname.includes("profile")
-    )
-      navigate("/verification");
-    else if (
-      currentUser &&
-      currentUser.verified &&
-      location.pathname.includes("verification")
-    )
-      navigate("/");
   });
   useEffect(() => {
     if (navigationType === "PUSH") {

@@ -66,7 +66,7 @@ export const updateUser = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to update users!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -85,7 +85,7 @@ export const getUserPosts = async (req, res) => {
       totalPages: Math.ceil(userPostsLength / limit),
     });
   } catch (error) {
-    return res.status(500).json({ message: "something went wrong " });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 export const getUserSavedPosts = async (req, res) => {
@@ -99,7 +99,7 @@ export const getUserSavedPosts = async (req, res) => {
     const userSavedPostsLength = user.savedPosts.length;
     const userSavedPostsData = user.savedPosts.slice(
       pageNum * limit - limit,
-      pageNum * limit
+      pageNum * limit,
     );
 
     console.log(userSavedPostsData);
@@ -108,7 +108,7 @@ export const getUserSavedPosts = async (req, res) => {
       totalPages: Math.ceil(userSavedPostsLength / limit),
     });
   } catch (error) {
-    return res.status(500).json({ message: "something went wrong " });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -123,6 +123,6 @@ export const getNotificationNumber = async (req, res) => {
     res.status(200).json(number);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to get profile posts!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

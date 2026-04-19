@@ -34,6 +34,6 @@ export const sendMessage = async (req, res) => {
     res.status(201).json(message);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to add message!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

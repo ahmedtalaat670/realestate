@@ -160,7 +160,7 @@ export const isLoggedIn = async (req, res) => {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "something went wrong in authorization",
+      message: "Internal server error",
     });
   }
 };

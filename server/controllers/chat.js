@@ -16,7 +16,7 @@ export const getChats = async (req, res) => {
     res.status(200).json(chats);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to get chats!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -47,7 +47,7 @@ export const getChat = async (req, res) => {
     res.status(200).json(chat);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to get chat!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -79,7 +79,7 @@ export const getChatByUserId = async (req, res) => {
     return res.status(200).json({ success: true, data: chat });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: "something went wrong" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -102,7 +102,7 @@ export const addChat = async (req, res) => {
     res.status(200).json(newChat);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to add chat!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -121,7 +121,7 @@ export const readChat = async (req, res) => {
           seenBy: tokenUserId,
         },
       },
-      { new: true }
+      { new: true },
     );
     if (!chat)
       return res.status(400).json({
@@ -134,6 +134,6 @@ export const readChat = async (req, res) => {
       .json({ success: true, message: "you have readen the chat" });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to read chat!" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

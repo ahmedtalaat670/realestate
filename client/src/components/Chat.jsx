@@ -272,39 +272,40 @@ const Chat = ({ chats, isChatsLoading }) => {
         <div className="w-full min-h-0 flex flex-1">
           <div ref={messagesRef} className="w-full overflow-y-auto">
             <div className="w-full flex flex-col justify-end min-h-full gap-[30px] p-5">
-              {chatInfo?.messagesId.map((msg) => {
-                const isMine =
-                  msg.userId?._id === authentication.currentUser?.userId;
+              {chatInfo?.messagesId &&
+                chatInfo?.messagesId.map((msg) => {
+                  const isMine =
+                    msg.userId?._id === authentication.currentUser?.userId;
 
-                return (
-                  <div
-                    key={msg._id}
-                    className={`message p-2.5 rounded-lg relative flex flex-wrap max-w-[80%] ${
-                      isMine
-                        ? "self-start bg-(--primary-color)"
-                        : "self-end bg-white"
-                    }`}
-                  >
-                    {msg.text}
+                  return (
+                    <div
+                      key={msg._id}
+                      className={`message p-2.5 rounded-lg relative flex flex-wrap max-w-[80%] ${
+                        isMine
+                          ? "self-start bg-(--primary-color)"
+                          : "self-end bg-white"
+                      }`}
+                    >
+                      {msg.text}
 
-                    {msg.createdAt && (
-                      <span
-                        className={`absolute text-[10px] text-gray-500 bottom-[-15px] ${
-                          isMine ? "left-0" : "right-0"
-                        }`}
-                      >
-                        {format(msg.createdAt)}
-                      </span>
-                    )}
+                      {msg.createdAt && (
+                        <span
+                          className={`absolute text-[10px] text-gray-500 bottom-[-15px] ${
+                            isMine ? "left-0" : "right-0"
+                          }`}
+                        >
+                          {format(msg.createdAt)}
+                        </span>
+                      )}
 
-                    {msg.sending && (
-                      <div className="ml-1 text-gray-500 text-[13px]">
-                        (sending)
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      {msg.sending && (
+                        <div className="ml-1 text-gray-500 text-[13px]">
+                          (sending)
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>

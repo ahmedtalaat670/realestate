@@ -1,4 +1,10 @@
-import { createContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import apiRequest from "../lib/apiRequest";
 import { useQuery } from "@tanstack/react-query";
 
@@ -6,11 +12,20 @@ export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null,
+    JSON.parse(localStorage.getItem("user")) ?? null,
   );
-  const updateUser = (data) => {
+  const updateUser = useCallback((data) => {
     setCurrentUser(data);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      currentUser,
+      updateUser,
+      setCurrentUser,
+    }),
+    [currentUser, updateUser],
+  );
 
   const {
     data: authData,
@@ -18,6 +33,7 @@ export const AuthContextProvider = ({ children }) => {
     isError,
   } = useQuery({
     queryKey: ["authorization"],
+    retry: false,
     queryFn: async () => {
       return await apiRequest.get("/auth/authorization");
     },
@@ -60,9 +76,5 @@ export const AuthContextProvider = ({ children }) => {
       window.removeEventListener("auth-cookie-lost", handleCookieLost);
     };
   }, []);
-  return (
-    <AuthContext.Provider value={{ currentUser, updateUser, setCurrentUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

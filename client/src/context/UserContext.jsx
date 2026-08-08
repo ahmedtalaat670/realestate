@@ -1,4 +1,12 @@
-import React, { createContext, use, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AuthContext } from "./AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SocketContext } from "./SocketContext";
@@ -23,72 +31,78 @@ const UserContextProvider = ({ children }) => {
     queryFn: async () => {
       return await apiRequest.get("/users/notifications");
     },
-    ...(location.pathname.includes("profile") && { enabled: false }),
+    ...((location.pathname.includes("profile") || !currentUser?.userId) && {
+      enabled: false,
+    }),
+    staleTime: 1000 * 60 * 2,
   });
 
-  const handleSendMessageButton = async (receiverId, postId, navigate) => {
-    if (!currentUser) {
-      toast.error("you need to login");
-      return;
-    }
-
-    const normalizedReceiverId =
-      typeof receiverId === "object" ? receiverId._id : receiverId;
-
-    if (currentUser.userId === normalizedReceiverId) {
-      toast.error("you are the owner of the post");
-      return;
-    }
-
-    const cacheKey = `${currentUser.userId}-${normalizedReceiverId}`;
-
-    // If cached → navigate instantly
-    if (chatCacheRef.current.has(cacheKey)) {
-      setChatId(chatCacheRef.current.get(cacheKey));
-      navigate("/profile");
-      return;
-    }
-
-    try {
-      setLoadingPostId(postId);
-
-      const res = await apiRequest.get(
-        `/chat/get-chat-byId/${normalizedReceiverId}`,
-      );
-
-      const chatId = res?.data?.data?._id;
-
-      if (chatId) {
-        setChatId(chatId);
-        chatCacheRef.current.set(cacheKey, chatId);
-        navigate("/profile");
+  const handleSendMessageButton = useCallback(
+    async (receiverId, postId, navigate) => {
+      if (!currentUser) {
+        toast.error("you need to login");
+        return;
       }
-    } catch (e) {
-      if (e?.response?.status === 404) {
-        const res2 = await apiRequest.get(
-          `/chat/add-chat/${normalizedReceiverId}`,
+
+      const normalizedReceiverId =
+        typeof receiverId === "object" ? receiverId._id : receiverId;
+
+      if (currentUser.userId === normalizedReceiverId) {
+        toast.error("you are the owner of the post");
+        return;
+      }
+
+      const cacheKey = `${currentUser.userId}-${normalizedReceiverId}`;
+
+      // If cached → navigate instantly
+      if (chatCacheRef.current.has(cacheKey)) {
+        setChatId(chatCacheRef.current.get(cacheKey));
+        navigate("/profile");
+        return;
+      }
+
+      try {
+        setLoadingPostId(postId);
+
+        const res = await apiRequest.get(
+          `/chat/get-chat-byId/${normalizedReceiverId}`,
         );
 
-        const newChatId = res2?.data?._id;
+        const chatId = res?.data?.data?._id;
 
-        if (newChatId) {
-          setChatId(newChatId);
-          chatCacheRef.current.set(cacheKey, newChatId);
+        if (chatId) {
+          setChatId(chatId);
+          chatCacheRef.current.set(cacheKey, chatId);
           navigate("/profile");
         }
-      } else {
-        toast.error("Something went wrong");
+      } catch (e) {
+        if (e?.response?.status === 404) {
+          const res2 = await apiRequest.get(
+            `/chat/add-chat/${normalizedReceiverId}`,
+          );
+
+          const newChatId = res2?.data?._id;
+
+          if (newChatId) {
+            setChatId(newChatId);
+            chatCacheRef.current.set(cacheKey, newChatId);
+            navigate("/profile");
+          }
+        } else {
+          toast.error("Something went wrong");
+        }
+      } finally {
+        setLoadingPostId(null);
       }
-    } finally {
-      setLoadingPostId(null);
-    }
-  };
+    },
+    [currentUser],
+  );
 
   useEffect(() => {
     if (!socket) return;
     const handleMessage = (data) => {
-      queryClient.refetchQueries({ queryKey: ["chatsData"] });
-      queryClient.refetchQueries({ queryKey: ["chat", data.chatId] });
+      queryClient.invalidateQuerires({ queryKey: ["chatsData"] });
+      queryClient.invalidateQuerires({ queryKey: ["chat", data.chatId] });
       if (!location.pathname.includes("profile")) refetch();
     };
     socket?.on("getMessage", handleMessage);
@@ -100,21 +114,28 @@ const UserContextProvider = ({ children }) => {
     setNotificationsNumber(notificationsData?.data);
   }, [notificationsData]);
 
+  const contextValue = useMemo(
+    () => ({
+      handleSendMessageButton,
+      posts,
+      setPosts,
+      notificationsNumber,
+      setNotificationsNumber,
+      loadingPostId,
+      chatId,
+      setChatId,
+    }),
+    [
+      handleSendMessageButton,
+      posts,
+      notificationsNumber,
+      loadingPostId,
+      chatId,
+    ],
+  );
+
   return (
-    <UserContext.Provider
-      value={{
-        handleSendMessageButton,
-        posts,
-        setPosts,
-        notificationsNumber,
-        setNotificationsNumber,
-        loadingPostId,
-        chatId,
-        setChatId,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 };
 

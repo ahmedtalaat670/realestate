@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
 import { AuthContext } from "./AuthContext";
 
@@ -9,20 +9,34 @@ export const SocketContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    setSocket(
-      io("https://realestate-g23n.vercel.app", {
-        transports: ["websocket"],
-      }),
-    );
-  }, []);
+    if (!currentUser?.userId) {
+      setSocket(null);
+      return;
+    }
 
-  useEffect(() => {
-    currentUser && socket?.emit("newUser", currentUser.userId);
-  }, [currentUser, socket]);
+    const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
+      transports: ["websocket"],
+      withCredentials: true,
+    });
+
+    newSocket.emit("newUser", currentUser.userId);
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+      setSocket(null);
+    };
+  }, [currentUser?.userId]);
+
+  const value = useMemo(
+    () => ({
+      socket,
+    }),
+    [socket],
+  );
 
   return (
-    <SocketContext.Provider value={{ socket }}>
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={value}>{children}</SocketContext.Provider>
   );
 };

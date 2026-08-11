@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "@/context/AuthContext";
 import { UserContext } from "@/context/UserContext";
 import apiRequest from "@/lib/apiRequest";
-import Chat from "@/components/Chat";
+import Chat from "@/components/chat/Chat";
 import List from "@/components/List";
 import { CustomPagination } from "@/components/CustomPagination";
 import LoadingComponent from "@/components/LoadingComponent";
